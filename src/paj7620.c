@@ -48,7 +48,7 @@
 #define PAJ_SET_IDLE_S1_STEP_1      0x68
 #define PAJ_SET_IDLE_S2_STEP_0      0x69
 #define PAJ_SET_IDLE_S2_STEP_1      0x6A
-#define PAJ_SET_OP_TO_S1_STEP_0     0x6B 
+#define PAJ_SET_OP_TO_S1_STEP_0     0x6B
 #define PAJ_SET_OP_TO_S1_STEP_1     0x6C
 #define PAJ_SET_S1_TO_S2_STEP_0     0x6D
 #define PAJ_SET_S1_TO_S2_STEP_1     0x6E
@@ -298,12 +298,12 @@ static rt_uint8_t paj7620_init_regs[][2] =
 
 /**
  * @brief read paj7620 register value
- * 
+ *
  * @param dev device handle
  * @param addr register address
  * @param data the read data
- * 
- * @return operation result 
+ *
+ * @return operation result
  */
 static rt_err_t paj7620_read_reg(paj7620_device_t dev, rt_uint8_t addr, rt_uint8_t *data)
 {
@@ -331,12 +331,12 @@ static rt_err_t paj7620_read_reg(paj7620_device_t dev, rt_uint8_t addr, rt_uint8
 
 /**
  * @brief write data value to paj7620 register
- * 
+ *
  * @param dev device handle
  * @param addr register address
  * @param data register value to be written to paj7620
- * 
- * @return operation result 
+ *
+ * @return operation result
  */
 static rt_err_t paj7620_write_reg(paj7620_device_t dev, rt_uint8_t addr, uint8_t data)
 {
@@ -357,14 +357,16 @@ static rt_err_t paj7620_write_reg(paj7620_device_t dev, rt_uint8_t addr, uint8_t
 
 /**
  * @brief select paj7620 register bank
- * 
+ *
  * @param dev device handle
  * @param bank bank to select
- * 
- * @return operation result 
+ *
+ * @return operation result
  */
 static rt_err_t paj7620_select_bank(paj7620_device_t dev, paj7620_bank_t bank)
 {
+    RT_ASSERT((bank == PAJ7620_BANK0) || (bank == PAJ7620_BANK0));
+
     switch (bank)
     {
     case PAJ7620_BANK0:
@@ -389,12 +391,12 @@ static rt_err_t paj7620_select_bank(paj7620_device_t dev, paj7620_bank_t bank)
 }
 
 /**
- * @brief get gesture 
- * 
+ * @brief get gesture
+ *
  * @param dev device handle
  * @param gest the gesture state read from register
- * 
- * @return operation result  
+ *
+ * @return operation result
  */
 rt_err_t paj7620_get_gesture(paj7620_device_t dev, paj7620_gesture_t *gest)
 {
@@ -544,10 +546,79 @@ rt_err_t paj7620_get_gesture(paj7620_device_t dev, paj7620_gesture_t *gest)
 }
 
 /**
- * @brief initialize the paj7620
+ * @brief wakeup paj7620
  * 
+ * @param dev device handle
+ * 
+ * @return operation result 
+ */
+static rt_err_t paj7620_wakeup(paj7620_device_t dev)
+{
+    rt_uint8_t data0, data1;
+
+    if (paj7620_select_bank(dev, PAJ7620_BANK0) != RT_EOK)
+    {
+        return RT_ERROR;
+    }
+
+    rt_thread_mdelay(1);
+
+    if (paj7620_select_bank(dev, PAJ7620_BANK0) != RT_EOK)
+    {
+        return RT_ERROR;
+    }
+
+    if (paj7620_read_reg(dev, 0, &data0) != RT_EOK)
+    {
+        return RT_ERROR;
+    }
+
+    if (paj7620_read_reg(dev, 1, &data1) != RT_EOK)
+    {
+        return RT_ERROR;
+    }
+
+    if (data0 != 0x20 || data1 != 0x76)
+    {
+        LOG_E("paj7620 check failed!");
+        return RT_ERROR;
+    }
+
+    if (data0 == 0x20)
+    {
+        LOG_I("paj7620 wakeup");
+    }
+
+    return RT_EOK;
+}
+
+/**
+ * @brief import the default register setting to paj7620
+ * 
+ * @param dev device handle
+ * 
+ * @return operation result 
+ */
+static rt_err_t paj7620_register_init(paj7620_device_t dev)
+{
+    rt_uint8_t i;
+
+    for (i = 0; i < sizeof(paj7620_init_regs) / sizeof(paj7620_init_regs[0]); i++)
+    {
+        if (paj7620_write_reg(dev, paj7620_init_regs[i][0], paj7620_init_regs[i][1]) != RT_EOK)
+        {
+            return RT_ERROR;
+        }
+    }
+
+    return RT_EOK;
+}
+
+/**
+ * @brief initialize the paj7620
+ *
  * @param i2c_bus_name the name of i2c device
- * @return paj7620 device handle 
+ * @return paj7620 device handle
  */
 paj7620_device_t paj7620_init(const char *i2c_bus_name)
 {
@@ -556,6 +627,7 @@ paj7620_device_t paj7620_init(const char *i2c_bus_name)
     RT_ASSERT(i2c_bus_name);
 
     dev = rt_calloc(1, sizeof(struct paj7620_device));
+
     if (dev == RT_NULL)
     {
         LOG_E("Can't allocate memory for paj7620 device on '%s' ", i2c_bus_name);
@@ -563,6 +635,7 @@ paj7620_device_t paj7620_init(const char *i2c_bus_name)
     }
 
     dev->i2c = rt_i2c_bus_device_find(i2c_bus_name);
+
     if (dev->i2c == RT_NULL)
     {
         LOG_E("Can't find paj7620 device on '%s' ", i2c_bus_name);
@@ -571,6 +644,7 @@ paj7620_device_t paj7620_init(const char *i2c_bus_name)
     }
 
     dev->lock = rt_mutex_create("mutex_paj7620", RT_IPC_FLAG_FIFO);
+
     if (dev->lock == RT_NULL)
     {
         LOG_E("Can't create mutex for paj7620 device on '%s' ", i2c_bus_name);
@@ -578,44 +652,21 @@ paj7620_device_t paj7620_init(const char *i2c_bus_name)
         return RT_NULL;
     }
 
-    paj7620_select_bank(dev, PAJ7620_BANK0);
-    rt_thread_mdelay(1);
-    paj7620_select_bank(dev, PAJ7620_BANK0);
-
+    if (paj7620_wakeup(dev) == RT_ERROR)
     {
-        rt_uint8_t data0, data1;
-        rt_uint8_t i;
-
-        if (paj7620_read_reg(dev, 0, &data0) != RT_EOK)
-        {
-            return RT_NULL;
-        }
-
-        if (paj7620_read_reg(dev, 1, &data1) != RT_EOK)
-        {
-            return RT_NULL;
-        }
-
-        if (data0 != 0x20 || data1 != 0x76)
-        {
-            LOG_E("paj7620 check failed!");
-        }
-
-        if (data0 == 0x20)
-        {
-            LOG_I("paj7620 wakeup");
-        }
-
-        for (i = 0; i < sizeof(paj7620_init_regs) / sizeof(paj7620_init_regs[0]); i++)
-        {
-            if (paj7620_write_reg(dev, paj7620_init_regs[i][0], paj7620_init_regs[i][1]) != RT_EOK)
-            {
-                return RT_NULL;
-            }
-        }
+        return RT_NULL;
     }
 
-    paj7620_select_bank(dev, PAJ7620_BANK0);
+    if (paj7620_register_init(dev) == RT_ERROR)
+    {
+        return RT_NULL;
+    }
+
+    if (paj7620_select_bank(dev, PAJ7620_BANK0) == RT_ERROR)
+    {
+        return RT_NULL;
+    }
+
     LOG_I("paj7620 finished the initialization");
 
     return dev;
@@ -623,15 +674,14 @@ paj7620_device_t paj7620_init(const char *i2c_bus_name)
 
 /**
  * @brief deinitialize the paj7620
- * 
- * @param dev device handle 
+ *
+ * @param dev device handle
  */
 void paj7620_deinit(paj7620_device_t dev)
 {
     RT_ASSERT(dev);
 
     rt_mutex_delete(dev->lock);
-
     rt_free(dev);
 }
 
@@ -644,20 +694,20 @@ static paj7620_device_t test_dev = RT_NULL;
 
 char *gesture_string[] =
 {
-    "gesture up",
-    "gesture down",
-    "gesture left",
-    "gesture right",
-    "gesture forward",
-    "gesture backward",
-    "gesture clockwise",
-    "gesture anticlockwise",
-    "gesture wave",
+    "up",
+    "down",
+    "left",
+    "right",
+    "forward",
+    "backward",
+    "clockwise",
+    "anticlockwise",
+    "wave",
 };
 
 /**
  * @brief paj7620 gesture detection thread
- * 
+ *
  * @param parameter input paramters
  */
 static void paj7620_entry(void *parameter)
@@ -670,7 +720,7 @@ static void paj7620_entry(void *parameter)
         {
             if (gesture < PAJ7620_GESTURE_NONE)
             {
-                rt_kprintf("get gesture %s\r\n", gesture_string[gesture]);
+                rt_kprintf("Detected gesture: %s\r\n", gesture_string[gesture]);
             }
         }
 
@@ -680,7 +730,7 @@ static void paj7620_entry(void *parameter)
 
 /**
  * @brief paj7620 msh command
- * 
+ *
  * @param argc argument counter
  * @param argv argument value
  */
@@ -700,6 +750,7 @@ void paj7620(int argc, char *argv[])
                     {
                         paj7620_deinit(test_dev);
                     }
+
                     test_dev = paj7620_init(argv[2]);
                 }
             }
@@ -713,6 +764,7 @@ void paj7620(int argc, char *argv[])
             if (test_dev)
             {
                 tid1 = rt_thread_create("paj7620", paj7620_entry, RT_NULL, 1024, 20, 1);
+
                 if (tid1 != RT_NULL)
                 {
                     rt_thread_startup(tid1);
@@ -724,6 +776,7 @@ void paj7620(int argc, char *argv[])
             if (tid1 != RT_NULL)
             {
                 rt_thread_delete(tid1);
+                tid1 = RT_NULL;
             }
         }
         else
