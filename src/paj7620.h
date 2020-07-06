@@ -28,6 +28,9 @@ extern "C"
 {
 #endif
 
+#include <rtthread.h>
+#include <rtdevice.h>
+
 struct paj7620_device
 {
     struct rt_i2c_bus_device *i2c;
@@ -54,7 +57,9 @@ typedef enum
 // Prototypes for the APIs.
 //
 //*****************************************************************************
-
+paj7620_device_t paj7620_init(const char *i2c_bus_name);
+void paj7620_deinit(paj7620_device_t dev);
+rt_err_t paj7620_get_gesture(paj7620_device_t dev, paj7620_gesture_t *gest);
 
 //*****************************************************************************
 //

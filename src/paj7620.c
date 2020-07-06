@@ -14,19 +14,10 @@
 //! @{
 //
 //*****************************************************************************
-#include <rtthread.h>
-#include <rtdevice.h>
-#include <board.h>
-
-#define DBG_ENABLE
-#define DBG_SECTION_NAME "paj7620"
-#define DBG_LEVEL DBG_LOG
-#define DBG_COLOR
-#include <rtdbg.h>
-
 #include "paj7620.h"
 
-#define PKG_USING_PAJ7620
+#define DBG_SECTION_NAME "paj7620"
+#include <rtdbg.h>
 
 #ifdef PKG_USING_PAJ7620
 
@@ -306,12 +297,13 @@ static rt_uint8_t paj7620_init_regs[][2] =
 };
 
 /**
- * \brief read paj7620 register value
+ * @brief read paj7620 register value
  * 
- * \param dev device handle
- * \param addr register address
- * \param data the read data
- * \return operation result 
+ * @param dev device handle
+ * @param addr register address
+ * @param data the read data
+ * 
+ * @return operation result 
  */
 static rt_err_t paj7620_read_reg(paj7620_device_t dev, rt_uint8_t addr, rt_uint8_t *data)
 {
@@ -338,12 +330,13 @@ static rt_err_t paj7620_read_reg(paj7620_device_t dev, rt_uint8_t addr, rt_uint8
 }
 
 /**
- * \brief write data value to paj7620 register
+ * @brief write data value to paj7620 register
  * 
- * \param dev device handle
- * \param addr register address
- * \param data register value to be written to paj7620
- * \return operation result 
+ * @param dev device handle
+ * @param addr register address
+ * @param data register value to be written to paj7620
+ * 
+ * @return operation result 
  */
 static rt_err_t paj7620_write_reg(paj7620_device_t dev, rt_uint8_t addr, uint8_t data)
 {
@@ -363,11 +356,12 @@ static rt_err_t paj7620_write_reg(paj7620_device_t dev, rt_uint8_t addr, uint8_t
 }
 
 /**
- * \brief select paj7620 register bank
+ * @brief select paj7620 register bank
  * 
- * \param dev device handle
- * \param bank bank to select
- * \return operation result 
+ * @param dev device handle
+ * @param bank bank to select
+ * 
+ * @return operation result 
  */
 static rt_err_t paj7620_select_bank(paj7620_device_t dev, paj7620_bank_t bank)
 {
@@ -395,11 +389,12 @@ static rt_err_t paj7620_select_bank(paj7620_device_t dev, paj7620_bank_t bank)
 }
 
 /**
- * \brief get gesture 
+ * @brief get gesture 
  * 
- * \param dev device handle
- * \param gest the gesture state read from register
- * \return operation result  
+ * @param dev device handle
+ * @param gest the gesture state read from register
+ * 
+ * @return operation result  
  */
 rt_err_t paj7620_get_gesture(paj7620_device_t dev, paj7620_gesture_t *gest)
 {
@@ -549,10 +544,10 @@ rt_err_t paj7620_get_gesture(paj7620_device_t dev, paj7620_gesture_t *gest)
 }
 
 /**
- * \brief initialize the paj7620
+ * @brief initialize the paj7620
  * 
- * \param i2c_bus_name the name of i2c device
- * \return paj7620 device handle 
+ * @param i2c_bus_name the name of i2c device
+ * @return paj7620 device handle 
  */
 paj7620_device_t paj7620_init(const char *i2c_bus_name)
 {
@@ -627,9 +622,9 @@ paj7620_device_t paj7620_init(const char *i2c_bus_name)
 }
 
 /**
- * \brief deinitialize the paj7620
+ * @brief deinitialize the paj7620
  * 
- * \param dev device handle 
+ * @param dev device handle 
  */
 void paj7620_deinit(paj7620_device_t dev)
 {
@@ -661,9 +656,9 @@ char *gesture_string[] =
 };
 
 /**
- * \brief paj7620 gesture detection thread
+ * @brief paj7620 gesture detection thread
  * 
- * \param parameter input paramters
+ * @param parameter input paramters
  */
 static void paj7620_entry(void *parameter)
 {
@@ -684,10 +679,10 @@ static void paj7620_entry(void *parameter)
 }
 
 /**
- * \brief paj7620 msh command
+ * @brief paj7620 msh command
  * 
- * \param argc argument counter
- * \param argv argument value
+ * @param argc argument counter
+ * @param argv argument value
  */
 void paj7620(int argc, char *argv[])
 {
@@ -736,7 +731,7 @@ void paj7620(int argc, char *argv[])
             rt_kprintf("Usage:\n");
             rt_kprintf("paj7620 probe <dev_name>   - probe paj7620 by given name\n");
             rt_kprintf("paj7620 open               - open paj7620 gesture detection\n");
-            rt_kprintf("paj7620 close              - close paj7620\n");
+            rt_kprintf("paj7620 close              - close paj7620 gesture detection\n");
         }
     }
 }
