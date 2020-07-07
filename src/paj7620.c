@@ -5,6 +5,7 @@
 // Change Logs:
 // Date                 Author      Note
 // 2020/07/05           Cheney      First draft version
+// 2020/07/07           Cheney      Fix the bug and update the sample macro.
 //
 //*****************************************************************************
 
@@ -365,7 +366,7 @@ static rt_err_t paj7620_write_reg(paj7620_device_t dev, rt_uint8_t addr, uint8_t
  */
 static rt_err_t paj7620_select_bank(paj7620_device_t dev, paj7620_bank_t bank)
 {
-    RT_ASSERT((bank == PAJ7620_BANK0) || (bank == PAJ7620_BANK0));
+    RT_ASSERT((bank == PAJ7620_BANK0) || (bank == PAJ7620_BANK1));
 
     switch (bank)
     {
@@ -685,7 +686,7 @@ void paj7620_deinit(paj7620_device_t dev)
     rt_free(dev);
 }
 
-#ifdef PAJ7620_TEST
+#ifdef PAJ7620_USING_SAMPLES
 /**< test thread handle */
 static rt_thread_t tid1 = RT_NULL;
 
