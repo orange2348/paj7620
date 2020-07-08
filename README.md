@@ -20,17 +20,14 @@ PAJ7620 package 遵循 Apache-2.0 许可，详见 `LICENSE` 文件。
 ```
 RT-Thread online packages
     peripheral libraries and drivers --->
-        [*] PAJ7620 gesture module driver  --->
-            [*]   Enable PAJ7620 SAMPLE
+        [*] PAJ7620: a gesture detection module --->
+            [*]   enable samples
+                  Version
 ```
 
 然后让 RT-Thread 的包管理器自动更新，或者使用 `pkgs --update` 命令更新包到 BSP 中。
 
-## 3、示例说明
-
-[samples.md](doc/samples.md)
-
-## 4、联系方式 & 感谢
+## 3、联系方式 & 感谢
 
 * 维护：orange2348
 * 主页：<https://github.com/orange2348>
